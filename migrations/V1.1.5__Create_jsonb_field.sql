@@ -14,7 +14,7 @@ update explorer set education = (
         "degree": "magister"
     }
 ]'
-) where height >= 180;
+) where height >= 160;
 
 
 update explorer set education = (
@@ -30,4 +30,6 @@ update explorer set education = (
             "degree": "phd"
         }
     ]'
-) where height <= 180
+) where height < 160;
+
+create index explorer_education on explorer using gin (education);

@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_file
@@ -31,7 +32,7 @@ app = Flask(__name__)
 app.config['JSon_as_asCII'] = False
 
 
-# 127.0.0.1:5000/expedition
+# 127.0.0.1:5000/expedition/materialized
 @app.route("/expedition/materialized")
 def get_holders():
     try:
@@ -54,7 +55,7 @@ curl --location 'http://localhost:5000/expedition/create' \
     "name": "name",
     "expedition_result": "expedition_result",
     "start_date": "10-01-2020",
-    "end_date": "11-01-2020"
+    "end_date": "11-01-2020",
 }'
 """
 
@@ -251,6 +252,86 @@ def autocomplete():
     except Exception as ex:
         logging.error(repr(ex), exc_info=True)
         return {'message': 'Bad Request'}, 400
+
+
+"""
+curl --location 'http://localhost:5000/explorer/update' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "name",
+    "height": 180,
+    "width": 110,
+    "education": [
+        {
+            "name": "КФУ",
+            "completion_date": 2014,
+            "degree": "magister"
+        },
+        {
+            "name": "ВШЭ",
+            "completion_date": 2019,
+            "degree": "phd"
+        }
+    ]
+}'
+"""
+
+
+@app.route("/explorer/update", methods=['POST'])
+def update_explorer():
+    try:
+        body = request.json
+        query = SQL("""
+        update explorer 
+        set name = {name}, height = {height}, width = {width}, education = {education}
+        where name = {name}
+        returning id
+        """).format(name=Literal(body['name']),
+                    height=Literal(body['height']),
+                    width=Literal(body['width']),
+                    education=Literal(json.dumps(body['education'])))
+
+        with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            updated_rows = cur.fetchall()
+            print(updated_rows)
+
+        if len(updated_rows) == 0:
+            return '', 404
+
+        return '', 204
+    except Exception as ex:
+        logging.error(ex, exc_info=True)
+        return '', 400
+
+
+# 127.0.0.1:5000/explorer/materialized
+@app.route("/explorer/materialized_jsonb")
+def get_explorer_jsonb():
+    try:
+        query = """select * from explorers_and_equipment where education @> '[{"name": "МГУ"}]"""
+        with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            holders = cur.fetchall()
+
+        return holders
+    except Exception as ex:
+        logging.error(ex, exc_info=True)
+        return '', 400
+
+
+@app.route("/explorer/materialized_array")
+def get_explorer_array():
+    try:
+        query = """select * from explorer_and_equipment where forum && array ['ResearchGate']"""
+        with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            holders = cur.fetchall()
+
+        return holders
+    except Exception as ex:
+        logging.error(ex, exc_info=True)
+        return '', 400
 
 
 if __name__ == '__main__':
