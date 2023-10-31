@@ -4,6 +4,7 @@ WORKDIR /flask_7.1
 
 COPY app.py .
 COPY requirements.txt .
+COPY ./templates/autocomplete.html ./templates/
 
 RUN pip install -r requirements.txt
 

@@ -1,7 +1,6 @@
 import os
-
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, jsonify, send_file
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2.sql import SQL, Literal
@@ -33,7 +32,7 @@ app.config['JSon_as_asCII'] = False
 
 
 # 127.0.0.1:5000/expedition
-@app.route("/expedition")
+@app.route("/expedition/materialized")
 def get_holders():
     try:
         query = """select * from expedition_with_explorers_and_equipment"""
@@ -226,6 +225,32 @@ def storage_cells_find_by_code():
     except Exception as ex:
         logging.error(ex, exc_info=True)
         return '', 400
+
+
+@app.route('/')
+def autocomplete_page():
+    try:
+        return send_file('templates/autocomplete.html')
+    except Exception as ex:
+        logging.error(repr(ex), exc_info=True)
+        return {'message': 'Bad Request'}, 400
+
+
+@app.route('/autocomplete')
+def autocomplete():
+    try:
+        name = request.args.get('name')
+
+        query = SQL("select * from expedition where name %> {name}").format(name=Literal(name))
+
+        with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            equipment = cur.fetchall()
+
+        return jsonify(list(map(lambda row: row['name'], equipment)))
+    except Exception as ex:
+        logging.error(repr(ex), exc_info=True)
+        return {'message': 'Bad Request'}, 400
 
 
 if __name__ == '__main__':
