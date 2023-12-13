@@ -17,7 +17,7 @@ pg_connection_parameters = {
 }
 
 pg_replication_parameters = {
-    'host': os.getenv('POSTGRES_HOST') or 'localhost',
+    'host': os.getenv('REPL_HOST') or 'localhost',
     'port': os.getenv('SLAVE_PORT'),
     'database': os.getenv('POSTGRES_DB'),
     'user': os.getenv('POSTGRES_USER'),
@@ -382,4 +382,4 @@ def get_explorer_array():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(debug=True)
