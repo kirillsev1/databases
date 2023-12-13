@@ -131,6 +131,13 @@
     {
         "database": "postgres",
         "index": "expedition",
+        "mappings": {
+            "properties": {
+                "name": {
+                    "type": "text"
+                }
+            }
+        },
         "nodes": {
             "table": "expedition",
             "schema": "public",
