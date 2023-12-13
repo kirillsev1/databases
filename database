@@ -1,0 +1,150 @@
+use('sirius')
+
+db.expedition.drop();
+db.car.drop();
+db.car_expedition.drop();
+db.explorer.drop();
+db.future_explore.drop();
+db.expedition_explorer.drop();
+db.equipment.drop();
+db.explorer_equipment.drop();
+
+db.createCollection("explorer", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["name", "height", "width"],
+      properties: {
+        id: {
+          bsonType: "int"
+        },
+        name: {
+          bsonType: "string"
+        },
+        height: {
+          bsonType: "int"
+        },
+        width: {
+          bsonType: "int"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("equipment", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["name", "production_country"],
+      properties: {
+        id: {
+          bsonType: "int"
+        },
+        name: {
+          bsonType: "string"
+        },
+        production_country: {
+          bsonType: "string"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("explorer_equipment", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["explorer_id", "equipment_id"],
+      properties: {
+        explorer_id: {
+          bsonType: "int"
+        },
+        equipment_id: {
+          bsonType: "int"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("expedition", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["name", "expedition_result", "start_date", "end_date"],
+      properties: {
+        id: {
+          bsonType: "int"
+        },
+        name: {
+          bsonType: "string"
+        },
+        expedition_result: {
+          bsonType: "string"
+        },
+        start_date: {
+          bsonType: "date"
+        },
+        end_date: {
+          bsonType: "date"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("car", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["name", "type"],
+      properties: {
+        id: {
+          bsonType: "int"
+        },
+        name: {
+          bsonType: "string"
+        },
+        type: {
+          bsonType: "string"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("car_expedition", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["car_id", "expedition_id"],
+      properties: {
+        car_id: {
+          bsonType: "int"
+        },
+        expedition_id: {
+          bsonType: "int"
+        }
+      }
+    }
+  }
+});
+
+db.createCollection("expedition_explorer", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["expedition_id", "explorer_id"],
+      properties: {
+        expedition_id: {
+          bsonType: "int"
+        },
+        explorer_id: {
+          bsonType: "int"
+        }
+      }
+    }
+  }
+});
