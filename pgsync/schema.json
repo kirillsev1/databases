@@ -1,0 +1,210 @@
+[
+    {
+        "database": "postgres",
+        "index": "explorer",
+        "nodes": {
+            "table": "explorer",
+            "schema": "public",
+            "columns": [],
+            "transform": {
+                "mapping": {
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "children": [
+                {
+                    "table": "equipment",
+                    "schema": "public",
+                    "columns": [],
+                    "transform": {
+                        "mapping": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "production_country": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "relationship": {
+                        "variant": "object",
+                        "type": "one_to_many",
+                        "through_tables": ["explorer_equipment"]
+                    }
+                },
+                {
+                    "table": "expedition",
+                    "schema": "public",
+                    "columns": [],
+                    "transform": {
+                        "mapping": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "expedition_result": {
+                                "type": "keyword"
+                            },
+                            "start_date": {
+                                "type": "date"
+                            },
+                            "end_date": {
+                                "type": "date"
+                            }
+                        }
+                    },
+                    "relationship": {
+                        "variant": "object",
+                        "type": "one_to_many",
+                        "through_tables": ["expedition_explorer"]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "database": "postgres",
+        "index": "equipment",
+        "nodes": {
+            "table": "equipment",
+            "schema": "public",
+            "columns": [],
+            "transform": {
+                "mapping": {
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "production_country": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "children": [
+                {
+                    "table": "explorer",
+                    "schema": "public",
+                    "columns": [],
+                    "transform": {
+                        "mapping": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "height": {
+                                "type": "integer"
+                            },
+                            "width": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "relationship": {
+                        "variant": "object",
+                        "type": "one_to_many",
+                        "through_tables": ["explorer_equipment"]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "database": "postgres",
+        "index": "expedition",
+        "nodes": {
+            "table": "expedition",
+            "schema": "public",
+            "columns": [],
+            "transform": {
+                "mapping": {
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "expedition_result": {
+                        "type": "keyword"
+                    },
+                    "start_date": {
+                        "type": "date"
+                    },
+                    "end_date": {
+                        "type": "date"
+                    }
+                }
+            },
+            "children": [
+                {
+                    "table": "car",
+                    "schema": "public",
+                    "columns": [],
+                    "transform": {
+                        "mapping": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "type": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "relationship": {
+                        "variant": "object",
+                        "type": "one_to_many",
+                        "through_tables": ["car_expedition"]
+                    }
+                },
+                {
+                    "table": "explorer",
+                    "schema": "public",
+                    "columns": [],
+                    "transform": {
+                        "mapping": {
+                            "id": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "height": {
+                                "type": "integer"
+                            },
+                            "width": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "relationship": {
+                        "variant": "object",
+                        "type": "one_to_many",
+                        "through_tables": ["expedition_explorer"]
+                    }
+                }
+            ]
+        }
+    }
+]
