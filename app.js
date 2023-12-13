@@ -16,18 +16,21 @@ app.get('/', (_, res) => {
 
 app.get('/explorer', async (req, res) => {
     try {
-        const text = req.query['text']
-
-        const result = await client.search({
-            index: 'explorer',
-            query: {
-                match: {
-                    plot: {
-                        query: text
+        const name = req.query['name']
+        var result = ''
+        if (name == null) {
+            result = await client.search({index: 'explorer'})
+        }
+        else {
+            result = await client.search({
+                index: 'explorer',
+                query: {
+                    match: {
+                        name: name
                     }
                 }
-            }
-        })
+            })
+        }
 
         res.json(result.hits.hits)
     } catch (err) {
