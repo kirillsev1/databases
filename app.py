@@ -16,6 +16,14 @@ pg_connection_parameters = {
     'password': os.getenv('POSTGRES_PASSWORD')
 }
 
+pg_replication_parameters = {
+    'host': os.getenv('POSTGRES_HOST') or 'localhost',
+    'port': os.getenv('SLAVE_PORT'),
+    'database': os.getenv('POSTGRES_DB'),
+    'user': os.getenv('POSTGRES_USER'),
+    'password': os.getenv('POSTGRES_PASSWORD')
+}
+
 for key in pg_connection_parameters:
     if pg_connection_parameters[key] is None:
         logging.error(f'{key} is None')
@@ -23,6 +31,13 @@ for key in pg_connection_parameters:
 
 def create_pg_connection():
     conn = psycopg2.connect(**pg_connection_parameters, cursor_factory=RealDictCursor)
+
+    conn.autocommit = True
+    return conn
+
+
+def create_replication_connection():
+    conn = psycopg2.connect(**pg_replication_parameters, cursor_factory=RealDictCursor)
 
     conn.autocommit = True
     return conn
@@ -38,6 +53,20 @@ def get_holders():
     try:
         query = """select * from expedition_with_explorers_and_equipment"""
         with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            holders = cur.fetchall()
+
+        return holders
+    except Exception as ex:
+        logging.error(ex, exc_info=True)
+        return '', 400
+
+
+@app.route("/expedition")
+def get_expedition():
+    try:
+        query = """select * from expedition"""
+        with create_replication_connection() as conn, conn.cursor() as cur:
             cur.execute(query)
             holders = cur.fetchall()
 
@@ -237,6 +266,21 @@ def autocomplete_page():
         return {'message': 'Bad Request'}, 400
 
 
+@app.route('/levenshtein')
+def levenshtein():
+    try:
+        name = request.args.get('name')
+        query = SQL("select * from expedition where levenshtein(name, {name}) <= 2;").format(name=Literal(name))
+        with create_pg_connection() as conn, conn.cursor() as cur:
+            cur.execute(query)
+            expedition = cur.fetchall()
+
+        return expedition
+    except Exception as ex:
+        logging.error(ex, exc_info=True)
+        return '', 400
+
+
 @app.route('/autocomplete')
 def autocomplete():
     try:
@@ -309,11 +353,10 @@ def update_explorer():
 @app.route("/explorer/materialized_jsonb")
 def get_explorer_jsonb():
     try:
-        query = """select * from explorers_and_equipment where education @> '[{"name": "МГУ"}]"""
+        query = """select * from explorers_and_equipment where education @> '%s'""" % json.dumps([request.args])
         with create_pg_connection() as conn, conn.cursor() as cur:
             cur.execute(query)
             holders = cur.fetchall()
-
         return holders
     except Exception as ex:
         logging.error(ex, exc_info=True)
@@ -323,11 +366,15 @@ def get_explorer_jsonb():
 @app.route("/explorer/materialized_array")
 def get_explorer_array():
     try:
-        query = """select * from explorer_and_equipment where forum && array ['ResearchGate']"""
+        query = """select * from explorers_and_equipment where forum && array ['%s']""" % request.args.get('forum')
         with create_pg_connection() as conn, conn.cursor() as cur:
             cur.execute(query)
             holders = cur.fetchall()
 
+        if not holders:
+            with create_pg_connection() as conn, conn.cursor() as cur:
+                cur.execute("select * from explorers_and_equipment")
+                holders = cur.fetchall()
         return holders
     except Exception as ex:
         logging.error(ex, exc_info=True)

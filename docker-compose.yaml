@@ -2,21 +2,25 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres_7_1_prikhodko
-    image: postgres:15.1
+    image: bitnami/postgresql:15.4.0
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=${REPL_USER}
+      - POSTGRESQL_REPLICATION_PASSWORD=${REPL_PASSWORD}
     ports:
       - ${POSTGRES_PORT}:5432
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_DB}" ]
       interval: 1s
       timeout: 1s
       retries: 30
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
   flyway:
     container_name: flyway_7_1_prikhodko
     image: flyway/flyway:9.11.0

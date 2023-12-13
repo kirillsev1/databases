@@ -64,12 +64,12 @@ create table if not exists expedition_explorer(
 );
 
 insert into expedition (name, expedition_result, start_date, end_date) values
-('first expedition', 'success', '08-09-2022', '8-10-2022'),
-('second expedition', 'failure', '2-01-2022', '1-03-2022'),
-('third expedition', 'success', '3-04-2020', '3-04-2022'),
-('fourth expedition', 'success', '1-01-2000', '1-01-2022'),
-('fifth expedition', 'failure', '2-04-2030', '2-04-2030'),
-('sixth expedition', 'success', '1-05-2001', '2-06-2002');
+('first_expedition', 'success', '08-09-2022', '8-10-2022'),
+('second_expedition', 'failure', '2-01-2022', '1-03-2022'),
+('third_expedition', 'success', '3-04-2020', '3-04-2022'),
+('fourth_expedition', 'success', '1-01-2000', '1-01-2022'),
+('fifth_expedition', 'failure', '2-04-2030', '2-04-2030'),
+('sixth_expedition', 'success', '1-05-2001', '2-06-2002');
 select * from expedition;
 
 insert into expedition_explorer(expedition_id, explorer_id) values

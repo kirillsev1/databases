@@ -13,7 +13,6 @@ update explorer set forum = (
 update explorer set forum = (
     '{
         "Stack Exchange - Academia",
-        "ResearchGate",
         "Elsevier Community"
     }'
 ) where height < 160;
@@ -21,7 +20,7 @@ update explorer set forum = (
 create index explorer_forum on explorer using gin (forum);
 
 begin;
-create materialized view explorer_and_equipment as
+create materialized view explorers_and_equipment as
     with explorer_with_equipment as (
         select ex.id, ex.name, ex.height, ex.width, ex.education, ex.forum,
         json_agg(json_build_object('id', e.id, 'name', e.name, 'product_country', e.production_country)) as equipment
@@ -33,7 +32,7 @@ create materialized view explorer_and_equipment as
 
 
 drop index if exists explorers_and_equipment_id;
-create unique index on explorer_and_equipment(id);
+create unique index on explorers_and_equipment(id);
 
 create function refresh_explorer_view()
     returns trigger as
