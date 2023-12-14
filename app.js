@@ -39,7 +39,8 @@ app.get('/explorer', async (req, res) => {
     }
 })
 
-app.get('/expedition', async (req, res) => {
+
+app.get('/expedition_by_fuzzy', async (req, res) => {
     try {
         const name = req.query['name']
         var result = ''
@@ -67,6 +68,35 @@ app.get('/expedition', async (req, res) => {
         res.sendStatus(400)
     }
 })
+
+
+app.get('/equipment_by_ngram', async (req, res) => {
+    try {
+        const name = req.query['name']
+        var result = ''
+        if (name == null) {
+            result = await client.search({index: 'equipment'})
+        }
+        else {
+            result = await client.search({
+                index: 'equipment',
+                query: {
+                    match: {
+                        name: {
+                            query : name,
+                        }
+                    }
+                }
+            })
+        }
+
+        res.json(result.hits.hits)
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(400)
+    }
+})
+
 
 app.listen(appPort, () => {
     console.log(`app listening on port ${appPort}`)
