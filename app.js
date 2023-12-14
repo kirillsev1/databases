@@ -15,7 +15,7 @@ const {
   DOCKER_MONGO_PORT,
 } = process.env;
 
-const client = new MongoClient(`mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${DOCKER_MONGO_PORT}`);
+const client = new MongoClient(`mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${DOCKER_MONGO_PORT}`);`231
 const db = client.db(MONGO_DB);
 
 const app = express();
