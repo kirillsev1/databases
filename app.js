@@ -1,27 +1,35 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import { MongoClient, ObjectId } from 'mongodb'
-import { config } from 'dotenv'
+import express from 'express';
+import bodyParser from 'body-parser';
+import { MongoClient, ObjectId } from 'mongodb';
+import { config } from 'dotenv';
 
-config()
+config();
 
-const { MONGO_USER, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB, EXPRESS_PORT, DOCKER_MONGO_PORT } = process.env
+const {
+  MONGO_USER,
+  MONGO_PASSWORD,
+  MONGO_HOST,
+  MONGO_PORT,
+  MONGO_DB,
+  EXPRESS_PORT,
+  DOCKER_MONGO_PORT,
+} = process.env;
 
-const client = new MongoClient(`mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${DOCKER_MONGO_PORT}`)
-const db = client.db(MONGO_DB)
+const client = new MongoClient(`mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${DOCKER_MONGO_PORT}`);
+const db = client.db(MONGO_DB);
 
-const app = express()
-app.use(bodyParser.json())
-const appPort = EXPRESS_PORT
+const app = express();
+app.use(bodyParser.json());
+const appPort = EXPRESS_PORT;
 
 app.get('/', (_, res) => {
     res.send('')
 })
 
-app.get('/expedition', async (_, res) => {
+app.get('/explorer', async (_, res) => {
     try {
         const movies = await db
-            .collection('expedition')
+            .collection('explorer')
             .find({}, { limit: 10, sort: { _id: -1 } })
             .toArray()
 
@@ -32,12 +40,14 @@ app.get('/expedition', async (_, res) => {
     }
 })
 
-app.post('/expedition/create', async (req, res) => {
+app.post('/explorer/create', async (req, res) => {
     try {
-        const { title, year, country } = req.body
+        const { name, age, country, artefact } = req.body
+        const artefacts = artefact.map(item => new ObjectId(item));
+        console.log(artefacts)
         const { insertedId } = await db
-            .collection('expedition')
-            .insertOne({ title, year, country })
+            .collection('explorer')
+            .insertOne({ name, age, country, artefacts })
 
         res.json({ id: insertedId })
     } catch (err) {
@@ -46,14 +56,15 @@ app.post('/expedition/create', async (req, res) => {
     }
 })
 
-app.post('/expedition/update', async (req, res) => {
+app.post('/explorer/update', async (req, res) => {
     try {
-        const { id, title, year, country } = req.body
+        const { id, name, age, country, artefact } = req.body
+        const artefacts = artefact.map(item => new ObjectId(item));
         const result = await db
-            .collection('expedition')
+            .collection('explorer')
             .updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { title, year, country } }
+                { $set: { name, age, country, artefacts } }
             )
 
         if (result.matchedCount === 0) {
@@ -67,10 +78,10 @@ app.post('/expedition/update', async (req, res) => {
     }
 })
 
-app.delete('/expedition/delete', async (req, res) => {
+app.delete('/explorer/delete', async (req, res) => {
     try {
         const { id } = req.body
-        const { deletedCount } = await db.collection('expedition').deleteOne({ _id: new ObjectId(id) })
+        const { deletedCount } = await db.collection('explorer').deleteOne({ _id: new ObjectId(id) })
 
         if (deletedCount === 0) {
             res.sendStatus(404)
@@ -82,6 +93,115 @@ app.delete('/expedition/delete', async (req, res) => {
         res.sendStatus(400)
     }
 })
+
+
+
+app.get('/artefact', async (_, res) => {
+    try {
+        const artefacts = await db
+            .collection('artefact')
+            .find({}, { limit: 10, sort: { _id: -1 } })
+            .toArray();
+
+        res.json(artefacts);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+app.post('/artefact/create', async (req, res) => {
+    try {
+        const { title, description, creator } = req.body;
+        const { insertedId } = await db
+            .collection('artefact')
+            .insertOne({ title, description, creator });
+
+        res.json({ id: insertedId });
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+app.post('/artefact/update', async (req, res) => {
+    try {
+        const { id, title, description, creator } = req.body;
+        const result = await db
+            .collection('artefact')
+            .updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { title, description, creator } }
+            );
+
+        if (result.matchedCount === 0) {
+            res.sendStatus(404);
+        } else {
+            res.sendStatus(204);
+        }
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+app.delete('/artefact/delete', async (req, res) => {
+    try {
+        const { id } = req.body;
+        const { deletedCount } = await db.collection('artefact').deleteOne({ _id: new ObjectId(id) });
+
+        if (deletedCount === 0) {
+            res.sendStatus(404);
+        } else {
+            res.sendStatus(204);
+        }
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+app.get('/explorer_artefact', async (_, res) => {
+    try {
+        const aggregation = await db.collection('explorer').aggregate([
+            {
+                $lookup: {
+                    from: "artefact",
+                    localField: "artefacts",
+                    foreignField: "_id",
+                    as: "artefact_info"
+                }
+            }
+        ]).toArray();
+
+        res.json(aggregation);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+app.get('/artefact_explorer', async (_, res) => {
+    try {
+        const aggregation = await db.collection('artefact').aggregate([
+            {
+                $lookup: {
+                    from: "explorer",
+                    localField: "_id",
+                    foreignField: "artefacts",
+                    as: "explorer_info"
+                }
+            }
+        ]).toArray();
+
+        res.json(aggregation);
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(400);
+    }
+});
+
+
 
 app.listen(appPort, () => {
     console.log(`app listening on port ${appPort}`)
