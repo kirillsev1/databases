@@ -153,10 +153,35 @@
     {
         "database": "postgres",
         "index": "expedition",
-        "mappings": {
-            "properties": {
-                "name": {
-                    "type": "text"
+        "setting": {
+            "analysis": {
+                "filter": {
+                    "russian_stop": {
+                        "type": "stop",
+                        "stopwords": "_russian_"
+                    },
+                    "russian_stemmer": {
+                        "type": "stemmer",
+                        "language": "russian"
+                    },
+                    "my_synonym": {
+                        "type": "synonym",
+                        "synonyms": [
+                            "провал => failure",
+                            "успех => success"
+                        ]
+                    }
+                },
+                "analyzer": {
+                    "my_ru_analyzer": {
+                        "tokenizer": "standard",
+                        "filter": [
+                            "lowercase",
+                            "russian_stop",
+                            "russian_stemmer",
+                            "my_synonym"
+                        ]
+                    }
                 }
             }
         },
@@ -170,10 +195,11 @@
                         "type": "keyword"
                     },
                     "name": {
-                        "type": "keyword"
+                        "type": "text"
                     },
                     "expedition_result": {
-                        "type": "keyword"
+                        "type": "text",
+                        "analyzer": "my_ru_analyzer"
                     },
                     "start_date": {
                         "type": "date"

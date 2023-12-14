@@ -98,6 +98,34 @@ app.get('/equipment_by_ngram', async (req, res) => {
 })
 
 
+app.get('/expedition_result_syn', async (req, res) => {
+    try {
+        const expedition_result = req.query['result']
+        var result = ''
+        if (result == null) {
+            result = await client.search({index: 'expedition'})
+        }
+        else {
+            result = await client.search({
+                index: 'expedition',
+                query: {
+                    match: {
+                        expedition_result: {
+                            query : expedition_result
+                        }
+                    }
+                }
+            })
+        }
+
+        res.json(result.hits.hits)
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(400)
+    }
+})
+
+
 app.listen(appPort, () => {
     console.log(`app listening on port ${appPort}`)
 })
